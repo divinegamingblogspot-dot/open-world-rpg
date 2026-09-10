@@ -7,6 +7,7 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 InputSetup="*res://input_setup.gd"
 CharacterUpgrade="*res://character_upgrade.gd"
 WorldOverhaul="*res://world_overhaul.gd"
+HeroineInteractions="*res://heroine_interactions.gd"
 
 [display]
 window/size/viewport_width=1280
