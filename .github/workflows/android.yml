@@ -26,7 +26,7 @@ jobs:
             -v "$PWD:/project" \
             -w /project \
             barichello/godot-ci:4.4.1 \
-            godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk
+            bash -lc 'mkdir -p /project/android/build; unzip -q /root/.local/share/godot/export_templates/4.4.1.stable/android_source.zip -d /project/android/build; echo "4.4.1.stable" > /project/android/.build_version; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
 
       - name: Verify APK
         run: |
