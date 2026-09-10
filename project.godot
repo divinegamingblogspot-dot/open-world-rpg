@@ -1,11 +1,12 @@
 [application]
-config/name="Neon Isles: Summer Quest"
+config/name="Neon Isles: Astral Tide"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
 [autoload]
 InputSetup="*res://input_setup.gd"
 CharacterUpgrade="*res://character_upgrade.gd"
+WorldOverhaul="*res://world_overhaul.gd"
 
 [display]
 window/size/viewport_width=1280
