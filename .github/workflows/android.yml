@@ -11,22 +11,31 @@ permissions:
 jobs:
   android:
     name: Build Neon Isles APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
+    container:
+      image: barichello/godot-ci:4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
-      - name: Prepare build directory
-        run: mkdir -p build
-
-      - name: Export Android APK
+      - name: Setup Godot templates and config
         run: |
-          docker run --rm \
-            -v "$PWD:/project" \
-            -w /project \
-            barichello/godot-ci:4.4.1 \
-            bash -lc 'export HOME=/root; mkdir -p "$HOME/.config/godot" "$HOME/.local/share/godot/export_templates"; if [ -d "$HOME/.local/share/godot/templates/4.4.1.stable" ]; then mv "$HOME/.local/share/godot/templates/4.4.1.stable" "$HOME/.local/share/godot/export_templates/4.4.1.stable"; fi; sdkmanager "platforms;android-34" "build-tools;34.0.0" >/dev/null; keytool -genkeypair -keystore /project/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA -keysize 2048 -noprompt >/dev/null 2>&1; test -f "$HOME/.local/share/godot/export_templates/4.4.1.stable/android_debug.apk"; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
+          mkdir -p ~/.local/share/godot/export_templates ~/.config
+          if [ -d /root/.config/godot ]; then mv /root/.config/godot ~/.config/godot; fi
+          if [ -d /root/.local/share/godot/export_templates/4.3.stable ]; then mv /root/.local/share/godot/export_templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable; fi
+          if [ -d /root/.local/share/godot/templates/4.3.stable ]; then mv /root/.local/share/godot/templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable; fi
+
+      - name: Create debug keystore
+        run: |
+          keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA -keysize 2048 -noprompt
+
+      - name: Build Android APK
+        run: |
+          mkdir -p build
+          godot --headless --verbose --export-debug "Android" build/Neon-Isles.apk
 
       - name: Verify APK
         run: |
