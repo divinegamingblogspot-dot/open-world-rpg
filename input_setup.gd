@@ -7,6 +7,10 @@ func _ready() -> void:
     _add_key_action("move_back", KEY_S, KEY_DOWN)
     _add_key_action("sprint", KEY_SHIFT)
     _add_key_action("attack", KEY_SPACE)
+    _add_key_action("left", KEY_A, KEY_LEFT)
+    _add_key_action("right", KEY_D, KEY_RIGHT)
+    _add_key_action("forward", KEY_W, KEY_UP)
+    _add_key_action("back", KEY_S, KEY_DOWN)
     var mouse := InputEventMouseButton.new()
     mouse.button_index = MOUSE_BUTTON_LEFT
     _add_event("attack", mouse)
