@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.4.1"
+
+jobs:
+  android:
+    name: Build Neon Isles APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Android APK
+        uses: barichello/godot-ci@4.4.1
+        with:
+          name: Neon-Isles
+          preset: Android
+          project_path: .
+          export_path: build/Neon-Isles.apk
+
+      - name: Verify APK
+        run: |
+          test -f build/Neon-Isles.apk
+          ls -lh build/Neon-Isles.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Neon-Isles-Android
+          path: build/Neon-Isles.apk
+          retention-days: 30
