@@ -5,6 +5,7 @@ config/features=PackedStringArray("4.4", "GL Compatibility")
 
 [autoload]
 InputSetup="*res://input_setup.gd"
+CharacterUpgrade="*res://character_upgrade.gd"
 
 [display]
 window/size/viewport_width=1280
