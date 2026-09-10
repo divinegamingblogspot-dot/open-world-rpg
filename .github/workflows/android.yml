@@ -26,7 +26,7 @@ jobs:
             -v "$PWD:/project" \
             -w /project \
             barichello/godot-ci:4.4.1 \
-            bash -lc 'sdkmanager "platforms;android-34" "build-tools;34.0.0" >/dev/null; keytool -genkeypair -keystore /project/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA -keysize 2048 -noprompt >/dev/null 2>&1; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
+            bash -lc 'sdkmanager "platforms;android-34" "build-tools;34.0.0" >/dev/null; mkdir -p /root/.local/share/godot/export_templates/4.4.1.stable /tmp/godot-templates; curl -L --fail --silent --show-error https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -o /tmp/godot-templates/export.tpz; unzip -q /tmp/godot-templates/export.tpz -d /tmp/godot-templates/unpacked; find /tmp/godot-templates/unpacked -name "android_debug.apk" -exec cp {} /root/.local/share/godot/export_templates/4.4.1.stable/android_debug.apk \;; find /tmp/godot-templates/unpacked -name "android_release.apk" -exec cp {} /root/.local/share/godot/export_templates/4.4.1.stable/android_release.apk \;; keytool -genkeypair -keystore /project/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA -keysize 2048 -noprompt >/dev/null 2>&1; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
 
       - name: Verify APK
         run: |
