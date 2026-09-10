@@ -26,7 +26,7 @@ jobs:
             -v "$PWD:/project" \
             -w /project \
             barichello/godot-ci:4.4.1 \
-            godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk
+            bash -lc 'yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.1"; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
 
       - name: Verify APK
         run: |
