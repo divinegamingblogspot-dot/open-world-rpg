@@ -49,32 +49,25 @@ func _build_world() -> void:
     e.ambient_light_energy = 0.8
     env.environment = e
     add_child(env)
-
     var sun := DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-55.0, -25.0, 0.0)
     sun.light_energy = 1.4
     sun.shadow_enabled = true
     add_child(sun)
-
     _box(Vector3(300, 0.5, 300), Vector3(0, -1.2, 0), Color("#35a9d6"), false)
     _cylinder(65.0, 2.0, Vector3.ZERO, Color("#78c957"))
     _cylinder(58.0, 0.8, Vector3(0, 0.7, 0), Color("#f3d48a"))
     _cylinder(50.0, 1.0, Vector3(0, 1.5, 0), Color("#58b34d"))
     _cylinder(22.0, 5.0, Vector3(0, 4.0, -5), Color("#879879"))
-
     for i in range(12):
         var a: float = float(i) * TAU / 12.0
-        var p := Vector3(cos(a) * 43.0, 1.0, sin(a) * 43.0)
-        _palm(p)
-
+        _palm(Vector3(cos(a) * 43.0, 1.0, sin(a) * 43.0))
     for i in range(7):
         var a: float = float(i) * TAU / 7.0 + 0.3
         _crystal(Vector3(cos(a) * 27.0, 4.0, sin(a) * 27.0))
-
     for i in range(8):
         var a: float = float(i) * TAU / 8.0
-        var p := Vector3(cos(a) * 34.0, 2.0, sin(a) * 34.0)
-        _box(Vector3(2.0, 6.0, 2.0), p, Color("#d2ccbd"), true)
+        _box(Vector3(2.0, 6.0, 2.0), Vector3(cos(a) * 34.0, 2.0, sin(a) * 34.0), Color("#d2ccbd"), true)
 
 func _box(size: Vector3, pos: Vector3, color: Color, collision: bool) -> Node3D:
     var n: Node3D = StaticBody3D.new() if collision else Node3D.new()
@@ -155,43 +148,148 @@ func _build_player() -> void:
     shape.height = 2.6
     cs.shape = shape
     player.add_child(cs)
-    _character_visual(player, Color("#2f5cff"), Color("#f0b49b"), Color("#30164b"))
+    _character_visual(player, Color("#35d7ff"), Color("#f3b49f"), Color("#18275f"))
 
 func _character_visual(root: Node3D, outfit: Color, skin: Color, hair: Color) -> void:
-    var body := MeshInstance3D.new()
-    var bm := CapsuleMesh.new()
-    bm.radius = 0.55
-    bm.height = 1.8
-    body.mesh = bm
-    body.position.y = 1.25
-    body.material_override = _mat(skin)
-    root.add_child(body)
-    var dress := MeshInstance3D.new()
-    var dm := CylinderMesh.new()
-    dm.top_radius = 0.7
-    dm.bottom_radius = 0.9
-    dm.height = 1.3
-    dress.mesh = dm
-    dress.position.y = 1.15
-    dress.material_override = _mat(outfit)
-    root.add_child(dress)
+    # Stylized adult anime heroine: summer-bikini battle outfit, long hair, boots and accessories.
+    var torso := MeshInstance3D.new()
+    var tm := CapsuleMesh.new()
+    tm.radius = 0.46
+    tm.height = 1.15
+    torso.mesh = tm
+    torso.position = Vector3(0, 1.65, 0)
+    torso.material_override = _mat(skin)
+    root.add_child(torso)
+
+    # Bikini top.
+    for side in [-1.0, 1.0]:
+        var cup := MeshInstance3D.new()
+        var cm := SphereMesh.new()
+        cm.radius = 0.28
+        cm.height = 0.48
+        cup.mesh = cm
+        cup.scale = Vector3(1.0, 0.72, 0.48)
+        cup.position = Vector3(0.23 * side, 1.72, -0.38)
+        cup.material_override = _mat(outfit)
+        root.add_child(cup)
+    var top_band := MeshInstance3D.new()
+    var band_mesh := BoxMesh.new()
+    band_mesh.size = Vector3(0.78, 0.10, 0.12)
+    top_band.mesh = band_mesh
+    top_band.position = Vector3(0, 1.62, -0.39)
+    top_band.material_override = _mat(outfit)
+    root.add_child(top_band)
+
+    # Bikini bottom.
+    var bottom := MeshInstance3D.new()
+    var bottom_mesh := BoxMesh.new()
+    bottom_mesh.size = Vector3(0.62, 0.22, 0.34)
+    bottom.mesh = bottom_mesh
+    bottom.position = Vector3(0, 1.12, -0.10)
+    bottom.material_override = _mat(outfit)
+    root.add_child(bottom)
+
+    # Long anime-style legs.
+    for side in [-1.0, 1.0]:
+        var leg := MeshInstance3D.new()
+        var lm := CapsuleMesh.new()
+        lm.radius = 0.19
+        lm.height = 1.45
+        leg.mesh = lm
+        leg.position = Vector3(0.23 * side, 0.52, 0)
+        leg.material_override = _mat(skin)
+        root.add_child(leg)
+        var boot := MeshInstance3D.new()
+        var bm := CapsuleMesh.new()
+        bm.radius = 0.23
+        bm.height = 0.55
+        boot.mesh = bm
+        boot.position = Vector3(0.23 * side, 0.05, -0.07)
+        boot.rotation_degrees.x = -12
+        boot.material_override = _mat(Color("#25284f"))
+        root.add_child(boot)
+
+    # Arms with gloves.
+    for side in [-1.0, 1.0]:
+        var arm := MeshInstance3D.new()
+        var am := CapsuleMesh.new()
+        am.radius = 0.14
+        am.height = 1.05
+        arm.mesh = am
+        arm.position = Vector3(0.62 * side, 1.55, 0)
+        arm.rotation_degrees.z = -12.0 * side
+        arm.material_override = _mat(skin)
+        root.add_child(arm)
+        var glove := MeshInstance3D.new()
+        var gm := SphereMesh.new()
+        gm.radius = 0.18
+        gm.height = 0.36
+        glove.mesh = gm
+        glove.position = Vector3(0.68 * side, 1.03, -0.02)
+        glove.material_override = _mat(Color("#25284f"))
+        root.add_child(glove)
+
+    # Head and face.
     var head := MeshInstance3D.new()
     var hm := SphereMesh.new()
-    hm.radius = 0.58
-    hm.height = 1.16
+    hm.radius = 0.56
+    hm.height = 1.12
     head.mesh = hm
-    head.position.y = 2.55
+    head.position = Vector3(0, 2.65, 0)
     head.material_override = _mat(skin)
     root.add_child(head)
-    var hair_m := MeshInstance3D.new()
+
+    # Hair cap + side locks + ponytails.
+    var hair_cap := MeshInstance3D.new()
     var hh := SphereMesh.new()
-    hh.radius = 0.67
-    hh.height = 1.3
-    hair_m.mesh = hh
-    hair_m.position = Vector3(0, 2.75, -0.12)
-    hair_m.scale = Vector3(1.05, 1.05, 0.8)
-    hair_m.material_override = _mat(hair)
-    root.add_child(hair_m)
+    hh.radius = 0.65
+    hh.height = 1.28
+    hair_cap.mesh = hh
+    hair_cap.position = Vector3(0, 2.78, 0.08)
+    hair_cap.scale = Vector3(1.05, 1.05, 0.82)
+    hair_cap.material_override = _mat(hair)
+    root.add_child(hair_cap)
+    for side in [-1.0, 1.0]:
+        var lock := MeshInstance3D.new()
+        var lock_mesh := CapsuleMesh.new()
+        lock_mesh.radius = 0.14
+        lock_mesh.height = 1.15
+        lock.mesh = lock_mesh
+        lock.position = Vector3(0.53 * side, 2.42, -0.02)
+        lock.rotation_degrees.z = 14.0 * side
+        lock.material_override = _mat(hair)
+        root.add_child(lock)
+        var pony := MeshInstance3D.new()
+        var pony_mesh := CapsuleMesh.new()
+        pony_mesh.radius = 0.20
+        pony_mesh.height = 0.95
+        pony.mesh = pony_mesh
+        pony.position = Vector3(0.52 * side, 2.60, 0.34)
+        pony.rotation_degrees.z = 24.0 * side
+        pony.material_override = _mat(hair)
+        root.add_child(pony)
+
+    # Large stylized anime eyes.
+    for side in [-1.0, 1.0]:
+        var eye := MeshInstance3D.new()
+        var em := SphereMesh.new()
+        em.radius = 0.105
+        em.height = 0.21
+        eye.mesh = em
+        eye.position = Vector3(0.20 * side, 2.67, -0.505)
+        eye.scale = Vector3(1.0, 1.35, 0.45)
+        eye.material_override = _mat(Color("#7eecff"), true)
+        root.add_child(eye)
+
+    # Hair ribbon and glowing shoulder accents.
+    for side in [-1.0, 1.0]:
+        var ribbon := MeshInstance3D.new()
+        var rm := BoxMesh.new()
+        rm.size = Vector3(0.28, 0.08, 0.18)
+        ribbon.mesh = rm
+        ribbon.position = Vector3(0.49 * side, 2.86, 0.32)
+        ribbon.material_override = _mat(outfit, true)
+        root.add_child(ribbon)
 
 func _build_camera() -> void:
     camera = Camera3D.new()
