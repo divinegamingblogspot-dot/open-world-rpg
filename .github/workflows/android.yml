@@ -13,41 +13,11 @@ jobs:
     name: Build Neon Isles APK
     runs-on: ubuntu-24.04
     timeout-minutes: 35
-    container:
-      image: barichello/godot-ci:4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
-
-      - name: Prepare Godot Android environment
-        shell: bash
-        run: |
-          set -euxo pipefail
-          mkdir -p "$HOME/.config" "$HOME/.local/share/godot/export_templates"
-
-          if [ -d /root/.config/godot ]; then
-            rm -rf "$HOME/.config/godot"
-            cp -a /root/.config/godot "$HOME/.config/godot"
-          fi
-
-          if [ -d /root/.local/share/godot/export_templates/4.3.stable ]; then
-            rm -rf "$HOME/.local/share/godot/export_templates/4.3.stable"
-            cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
-          elif [ -d /root/.local/share/godot/templates/4.3.stable ]; then
-            rm -rf "$HOME/.local/share/godot/export_templates/4.3.stable"
-            cp -a /root/.local/share/godot/templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
-          fi
-
-          if command -v sdkmanager >/dev/null 2>&1; then
-            yes | sdkmanager --licenses >/dev/null 2>&1 || true
-            sdkmanager "platforms;android-33" "build-tools;33.0.2"
-          fi
-
-          mkdir -p build
-          godot --headless --version
-          godot --headless --path . --editor --quit
 
       - name: Create debug keystore
         shell: bash
@@ -65,19 +35,32 @@ jobs:
             -keysize 2048 \
             -noprompt
 
-      - name: Build Android APK
+      - name: Build Android APK with Godot CI
         shell: bash
         run: |
           set -euxo pipefail
           mkdir -p build
-          godot --headless --path . --verbose --export-debug "Android" build/Neon-Isles.apk
+          docker run --rm \
+            -v "$PWD:/project" \
+            -w /project \
+            barichello/godot-ci:4.3 \
+            bash -lc '
+              set -euxo pipefail
+              mkdir -p /root/.local/share/godot/export_templates /root/.config
+              if [ -d /root/.local/share/godot/templates/4.3.stable ] && [ ! -d /root/.local/share/godot/export_templates/4.3.stable ]; then
+                cp -a /root/.local/share/godot/templates/4.3.stable /root/.local/share/godot/export_templates/4.3.stable
+              fi
+              godot --headless --version
+              godot --headless --path /project --editor --quit
+              godot --headless --path /project --verbose --export-debug "Android" /project/build/Neon-Isles.apk
+            '
 
       - name: Verify APK
         shell: bash
         run: |
           set -euxo pipefail
           test -s build/Neon-Isles.apk
-          file build/Neon-Isles.apk || true
+          file build/Neon-Isles.apk
           ls -lh build/Neon-Isles.apk
 
       - name: Upload APK
