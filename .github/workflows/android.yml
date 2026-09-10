@@ -21,25 +21,63 @@ jobs:
         with:
           lfs: true
 
-      - name: Setup Godot templates and config
+      - name: Prepare Godot Android environment
+        shell: bash
         run: |
-          mkdir -p ~/.local/share/godot/export_templates ~/.config
-          if [ -d /root/.config/godot ]; then mv /root/.config/godot ~/.config/godot; fi
-          if [ -d /root/.local/share/godot/export_templates/4.3.stable ]; then mv /root/.local/share/godot/export_templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable; fi
-          if [ -d /root/.local/share/godot/templates/4.3.stable ]; then mv /root/.local/share/godot/templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable; fi
+          set -euxo pipefail
+          mkdir -p "$HOME/.config" "$HOME/.local/share/godot/export_templates"
+
+          if [ -d /root/.config/godot ]; then
+            rm -rf "$HOME/.config/godot"
+            cp -a /root/.config/godot "$HOME/.config/godot"
+          fi
+
+          if [ -d /root/.local/share/godot/export_templates/4.3.stable ]; then
+            rm -rf "$HOME/.local/share/godot/export_templates/4.3.stable"
+            cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
+          elif [ -d /root/.local/share/godot/templates/4.3.stable ]; then
+            rm -rf "$HOME/.local/share/godot/export_templates/4.3.stable"
+            cp -a /root/.local/share/godot/templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
+          fi
+
+          if command -v sdkmanager >/dev/null 2>&1; then
+            yes | sdkmanager --licenses >/dev/null 2>&1 || true
+            sdkmanager "platforms;android-33" "build-tools;33.0.2"
+          fi
+
+          mkdir -p build
+          godot --headless --version
+          godot --headless --path . --editor --quit
 
       - name: Create debug keystore
+        shell: bash
         run: |
-          keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -keyalg RSA -keysize 2048 -noprompt
+          set -euxo pipefail
+          rm -f debug.keystore
+          keytool -genkeypair \
+            -keystore debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -validity 10000 \
+            -keyalg RSA \
+            -keysize 2048 \
+            -noprompt
 
       - name: Build Android APK
+        shell: bash
         run: |
+          set -euxo pipefail
           mkdir -p build
-          godot --headless --verbose --export-debug "Android" build/Neon-Isles.apk
+          godot --headless --path . --verbose --export-debug "Android" build/Neon-Isles.apk
 
       - name: Verify APK
+        shell: bash
         run: |
-          test -f build/Neon-Isles.apk
+          set -euxo pipefail
+          test -s build/Neon-Isles.apk
+          file build/Neon-Isles.apk || true
           ls -lh build/Neon-Isles.apk
 
       - name: Upload APK
@@ -47,4 +85,5 @@ jobs:
         with:
           name: Neon-Isles-Android
           path: build/Neon-Isles.apk
+          if-no-files-found: error
           retention-days: 30
