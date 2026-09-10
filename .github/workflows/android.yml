@@ -26,7 +26,19 @@ jobs:
             -v "$PWD:/project" \
             -w /project \
             barichello/godot-ci:4.4.1 \
-            bash -lc 'yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.1"; godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
+            bash -lc 'yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.1"; mkdir -p /root/.config/godot; cat > /root/.config/godot/editor_settings-4.tres <<EOF
+[gd_resource type="EditorSettings" format=3]
+
+[resource]
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+export/android/force_system_user = false
+export/android/target_sdk = 35
+EOF
+godot --headless --path /project --export-debug "Android" /project/build/Neon-Isles.apk'
 
       - name: Verify APK
         run: |
